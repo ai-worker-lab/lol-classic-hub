@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ai-worker-lab.github.io/lol-classic-hub/sitemap.xml
