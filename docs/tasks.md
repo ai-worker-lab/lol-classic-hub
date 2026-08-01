@@ -29,6 +29,7 @@
 
 - [x] T011 [P1] README 실행·배포·갱신·D+14/D+30 절차 작성
 - [x] T012 [P1] GitHub Pages workflow 추가
-- [ ] T013 [P1] 정적/HTTP 검증 후 커밋·origin push
-- [ ] T014 [P1] 공개 배포 URL과 핵심 URL HTTP 검증
-- [ ] T015 [P1] Paperclip 댓글에 명령·출력·위험·남은 차단 요인 기록 후 완료 처리
+- [x] T013 [P1] 정적/HTTP 검증 후 커밋·origin push
+- [x] T014 [P1] 공개 배포 URL과 핵심 URL HTTP 검증
+- [ ] T015 [P1] Paperclip 댓글에 명령·출력·위험·남은 차단 요인 기록 후 최종 disposition 처리
+  - Remaining: Riot IP·Data Dragon 에셋 공개는 보드/CEO 정책 게이트 해제 전까지 차단
