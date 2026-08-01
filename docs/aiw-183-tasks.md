@@ -26,8 +26,8 @@
 ## 통합·배포
 
 - [x] T013 [P1] 로컬 build/verify와 HTTP 미리보기 검증
-- [ ] T014 [P1] 작업 브랜치 push, main 통합·push
-- [ ] T015 [P1] GitHub Pages Action 성공 확인
-- [ ] T016 [P1] 공개 URL·데이터·이미지·고지 실제 검증
+- [x] T014 [P1] 작업 브랜치 push, main 통합·push
+- [x] T015 [P1] GitHub Pages Action 성공 확인
+- [x] T016 [P1] 공개 URL·데이터·이미지·고지 실제 검증
 - [x] T017 [P1] Developer Portal 등록·감사 후속 작업 AIW-184 생성
-- Remaining: T009~T017 실행 후 공개 URL·커밋 SHA·Actions 결과를 AIW-183에 기록한다.
+- 완료: 공개 URL·구현 커밋·Actions 결과와 실제 공개 검증을 판정 문서 및 AIW-183에 기록한다.

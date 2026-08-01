@@ -21,7 +21,7 @@
 
 ## 배포·운영
 
-- [ ] T011 [P1] main 통합·push
-- [ ] T012 [P1] GitHub Pages Action 성공 확인
-- [ ] T013 [P1] 공개 URL·데이터·이미지·고지 실제 검증
+- [x] T011 [P1] main 통합·push
+- [x] T012 [P1] GitHub Pages Action 성공 확인
+- [x] T013 [P1] 공개 URL·데이터·이미지·고지 실제 검증
 - [x] T014 [P1] Developer Portal 제품 등록·감사 후속 AIW-184 생성

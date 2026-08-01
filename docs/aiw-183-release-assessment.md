@@ -154,7 +154,15 @@ SEO: canonical/description/Open Graph/JSON-LD/robots/sitemap 확인
 ## 7. 배포 결과
 
 - 공개 URL: https://ai-worker-lab.github.io/lol-classic-hub/
-- main 통합 커밋과 GitHub Actions 실행 결과는 배포 완료 후 이 문서와 AIW-183 이슈에 기록한다.
+- 구현·데이터 main 통합 커밋: `9ff45be98a0cc24a64638351c0b0287d92a64b8d`
+- GitHub Actions: `Deploy GitHub Pages` 실행 `30722260494` — `success`
+  - https://github.com/ai-worker-lab/lol-classic-hub/actions/runs/30722260494
+- 실제 공개 검증:
+  - 홈·챔피언·아이템·룬·특성: HTTP 200
+  - 공개 카드·이미지: 챔피언 `116/116`, 아이템 `205/205`, 룬 `296/296`, 특성 `56/56`
+  - 표본 `Aatrox.png`: HTTP 200, `image/png`, 14,055 bytes, SHA-256 `8bca42a6826174e7fac4a867d89dff75a3e8bff449521f2ed4c84acef6642960`
+  - 공개 `data-manifest.json`: `3.13.24/ko_KR`, `publicDistribution=true`, 고유 이미지 447개
+  - 두 필수 Riot 고지·비수익화·출처·버전·확인일·현행성 한계 노출 확인
 
 ## 8. 후속 질문·운영 작업
 
