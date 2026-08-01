@@ -47,7 +47,12 @@ BUILDER_JS = r"""
   const form = document.querySelector('#build-form');
   const list = document.querySelector('#saved-builds');
   const status = document.querySelector('#save-status');
-  const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } };
+  const read = () => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(KEY) || '[]');
+      return Array.isArray(parsed) ? parsed.filter(build => build && typeof build === 'object') : [];
+    } catch { return []; }
+  };
   const write = builds => localStorage.setItem(KEY, JSON.stringify(builds));
   const clean = value => String(value || '').trim();
   const render = () => {
