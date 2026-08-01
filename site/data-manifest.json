@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-08-02",
+  "sourceVersion": "3.15.5",
+  "checkedAt": "2026-08-02",
+  "counts": {
+    "champions": 0,
+    "items": 0,
+    "masteries": 0,
+    "runes": 0
+  },
+  "sources": {
+    "champions": "https://ddragon.leagueoflegends.com/cdn/3.15.5/data/ko_KR/champion.json",
+    "items": "https://ddragon.leagueoflegends.com/cdn/3.15.5/data/ko_KR/item.json",
+    "masteries": "https://ddragon.leagueoflegends.com/cdn/3.15.5/data/ko_KR/mastery.json",
+    "runes": "https://ddragon.leagueoflegends.com/cdn/3.15.5/data/ko_KR/rune.json"
+  }
+}
