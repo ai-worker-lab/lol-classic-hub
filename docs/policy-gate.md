@@ -4,32 +4,26 @@
 
 ## 현재 판정
 
-상위 AIW-166 이슈의 2026-08-02 보드 코멘트는 Riot 공식 Legal Jibber Jabber와 Developer 정책을 근거로, Riot IP·Data Dragon 에셋을 포함한 공개 배포 및 광고 신청을 정책 판단 전까지 중단하도록 지시했다. 동시에 색인 시간을 확보하기 위해 정책상 안전한 중립 정적 셸은 먼저 배포하도록 했다.
+`public_distribution=false`를 유지한다. Data Dragon 자체는 Riot Developer 정책이 사용 가능한 정적 데이터·에셋으로 열거하지만, Riot Games `Legal Jibber Jabber`는 사업 또는 법인이 관여하는 프로젝트를 상업 프로젝트에 포함하고 Riot의 서면 라이선스 없이는 금지한다.
 
-따라서 이번 MVP는 다음만 공개한다.
+현재 저장소·Pages가 `ai-worker-lab` 조직에 속하고 프로젝트가 AI Worker Lab 회사 업무로 관리되므로, 실제 운영 주체가 개인인지 사업·법인인지와 Riot 서면 허용 상태를 확인하기 전에는 게임 데이터·에셋을 공개 사이트에 통합하지 않는다.
 
-- 중립 브랜드 `클래식 노트`
-- 홈과 룬·특성·아이템·챔피언 레퍼런스 URL
-- 출처 후보 URL, 확인일, `확인 중` 상태
-- 사용자가 직접 입력하는 브라우저 전용 빌드 메모
-- robots, sitemap, canonical, Open Graph, JSON-LD, 404
-
-다음은 공개하지 않는다.
-
-- Data Dragon에서 추출한 챔피언·아이템·룬·마스터리 이름과 수치
-- Data Dragon 이미지 에셋
-- Riot 로고, 챔피언 원화, 공식 게임 UI
-- 광고 또는 수익화 코드
+상세 근거와 데이터 검증 결과: `docs/aiw-183-release-assessment.md`
 
 ## 공식 원문
 
-- Riot Games Legal Jibber Jabber: https://www.riotgames.com/en/legal
-- Riot Developer General Policies: https://developer.riotgames.com/policies/general
-- Riot Developer Data Dragon 문서: https://developer.riotgames.com/docs/lol#data-dragon
-- Data Dragon 버전 목록: https://ddragon.leagueoflegends.com/api/versions.json
+- Riot Games `Legal Jibber Jabber` (Last Updated August 2018): https://www.riotgames.com/en/legal
+- Riot Developer `General Policies` (LAST UPDATED: MARCH 11, 2025): https://developer.riotgames.com/policies/general
+- Riot Developer `League of Legends` — Data Dragon: https://developer.riotgames.com/docs/lol#data-dragon
+- Data Dragon 공식 버전 목록: https://ddragon.leagueoflegends.com/api/versions.json
 
 ## 해제 조건
 
-보드가 운영 주체의 법적 지위와 허용 경로를 결정하고, 필요한 Riot 서면 허가 또는 Developer Portal 등록·승인 상태를 확인한 뒤 명시적으로 게임 데이터/에셋 공개를 허용해야 한다. 해제 전에는 `scripts/build.py`의 빈 데이터셋 게이트를 제거하지 않는다.
+다음 중 하나를 충족한다.
 
-이 문서는 법률 자문이 아니라 공식 정책 원문과 보드 지시에 따른 출시 위험 통제 기록이다.
+1. 프로젝트를 실제 개인 무료 팬 프로젝트로 운영하고 사업·법인 관여가 없음을 확인하며, Developer Portal 등록·감사를 완료한다.
+2. AI Worker Lab 사업·법인이 계속 관여한다면 Riot의 서면 라이선스 또는 이 프로젝트에 적용 가능한 명시적 서면 승인을 확보하고 Developer Portal 등록·감사를 완료한다.
+
+해제 후에도 필수 고지문, 버전·출처·확인일, 현행성 한계를 표시하고 Riot 로고·공식 UI·마스터리 트리 배경/연결선·수익화 기능을 제외한다.
+
+이 문서는 법률 자문이 아니라 Riot 공식 정책에 대한 출시 전 운영 검토다.
