@@ -22,7 +22,10 @@ ROOT = Path(__file__).resolve().parent
 BASE = "https://ddragon.leagueoflegends.com"
 VERSION_LIST_URL = f"{BASE}/api/versions.json"
 DOCS_URL = "https://developer.riotgames.com/docs/lol#data-dragon"
+GENERAL_POLICY_URL = "https://developer.riotgames.com/policies/general"
 LEGAL_URL = "https://www.riotgames.com/en/legal"
+POLICY_REVIEWED_AT = "2026-08-02"
+PUBLIC_POLICY_STATUS = "공개 가능 (조건부)"
 USER_AGENT = "lol-classic-hub-asset-audit/1.0"
 
 
@@ -56,7 +59,7 @@ def download_image(job: dict[str, Any]) -> dict[str, Any]:
             **job,
             "availability": "unavailable",
             "http_status": error.code,
-            "policy_status": "확인 중",
+            "policy_status": "공식 URL 오류로 공개 대상 제외",
             "public_distribution": False,
             "reason": "공식 URL이 HTTP 오류를 반환함",
         }
@@ -69,8 +72,8 @@ def download_image(job: dict[str, Any]) -> dict[str, Any]:
         "http_status": 200,
         "sha256": sha256(body),
         "bytes": len(body),
-        "policy_status": "확인 중",
-        "public_distribution": False,
+        "policy_status": PUBLIC_POLICY_STATUS,
+        "public_distribution": True,
     }
 
 
@@ -91,9 +94,10 @@ def main() -> None:
         raise SystemExit("--checked-at은 UTC Z 표기여야 합니다")
 
     upstream = ROOT / "upstream"
+    source_data = upstream / VERSION / "data" / LOCALE
     vendor = ROOT / "vendor" / "riot-data-dragon" / VERSION
-    if upstream.exists():
-        shutil.rmtree(upstream)
+    if source_data.exists():
+        shutil.rmtree(source_data)
     if vendor.exists():
         shutil.rmtree(vendor)
 
@@ -125,8 +129,8 @@ def main() -> None:
                 "entry_count": len(document["data"]),
                 "availability": "available",
                 "http_status": 200,
-                "policy_status": "확인 중",
-                "public_distribution": False,
+                "policy_status": PUBLIC_POLICY_STATUS,
+                "public_distribution": True,
             }
         )
         for asset_id, record in sorted(document["data"].items()):
@@ -163,13 +167,15 @@ def main() -> None:
             "season3_accessible_versions": season3_versions,
         },
         "policy": {
-            "status": "확인 중",
-            "public_distribution": False,
+            "status": PUBLIC_POLICY_STATUS,
+            "public_distribution": True,
+            "reviewed_at": POLICY_REVIEWED_AT,
             "note_ko": (
-                "출처와 무결성만 확인했다. Riot 정책·라이선스 허용 근거가 별도 승인되기 전에는 "
-                "이 파일들을 공개 배포 산출물에 포함하지 않는다."
+                "개인 비상업 팬 프로젝트, 두 필수 고지, 공식 출처·버전·확인일 표시, Riot 로고 미사용, "
+                "비수익화 조건으로 공개한다. Developer Portal 제품 등록·감사는 AIW-184에서 병행한다. "
+                "공식 아카이브 미제공 자산은 제외한다."
             ),
-            "sources": [DOCS_URL, LEGAL_URL],
+            "sources": [GENERAL_POLICY_URL, DOCS_URL, LEGAL_URL],
         },
         "datasets": datasets,
         "assets": assets,
@@ -178,7 +184,7 @@ def main() -> None:
             {
                 "kind": "mastery_tree_chrome",
                 "availability": "unavailable",
-                "policy_status": "확인 중",
+                "policy_status": "공식 아카이브 미제공으로 공개 대상 제외",
                 "public_distribution": False,
                 "checked_at": args.checked_at,
                 "reason_ko": (
@@ -194,7 +200,9 @@ def main() -> None:
             "available_count": len(assets) - len(unavailable),
             "unavailable_count": len(unavailable) + 1,
             "not_provided_count": 1,
-            "policy_pending_count": len(assets) + len(datasets) + 1,
+            "policy_pending_count": 0,
+            "public_distribution_count": len(assets) - len(unavailable) + len(datasets),
+            "excluded_from_distribution_count": len(unavailable) + 1,
         }
     }
     write_bytes_atomic(

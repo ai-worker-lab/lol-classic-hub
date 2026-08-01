@@ -3,7 +3,7 @@ name: Deploy GitHub Pages
 on:
   push:
     branches:
-      - AIW-168-48-mvp
+      - main
   workflow_dispatch:
 
 permissions:

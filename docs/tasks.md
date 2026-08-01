@@ -1,35 +1,27 @@
-# AIW-168 작업 목록
+# 클래식 노트 작업 목록
 
-## Setup
+## Setup·정책
 
-- [x] T001 [P1] Paperclip 이슈·상위 보드 결정·저장소 상태 확인
-- [x] T002 [P1] `docs/spec.md` 작성
-- [x] T003 [P1] `docs/plan.md` 작성
+- [x] T001 [P1] 개인 비상업 운영 주체와 비수익화 제약 확정
+- [x] T002 [P1] Riot 공식 정책·Data Dragon 허용 자산·필수 고지 확인
+- [x] T003 [P1] `3.13.24/ko_KR` 단일 데이터셋 확정
 
-## Foundational
+## 데이터·에셋
 
-- [x] T004 [P1] `scripts/build.py` 정적 생성기 구현
-- [x] T005 [P1] 공통 스타일과 SEO 템플릿 구현
-- Checkpoint: 필수 페이지와 메타데이터가 로컬 생성됨
+- [x] T004 [P1] 공식 JSON 4종과 SHA-256 저장
+- [x] T005 [P1] 공식 아이콘 447개와 매니페스트 통합
+- [x] T006 [P1] 챔피언·아이템·룬·특성 페이지 생성
+- [x] T007 [P1] 마스터리 트리 배경·연결선 제외
 
-## User Story — 레퍼런스와 색인
+## 고지·도구·검증
 
-- [x] T006 [P1] 홈·룬·특성·아이템·챔피언 페이지 생성
-- [x] T007 [P1] robots·sitemap·canonical·Open Graph·JSON-LD·404 생성
-- [x] T008 [P1] 출처·확인일·`확인 중` 상태 표시
-- Checkpoint: 정적 검증 통과
+- [x] T008 [P1] 두 필수 고지와 버전·로케일·확인일·현행성 한계 표시
+- [x] T009 [P2] `localStorage` 빌드 저장·삭제 유지
+- [x] T010 [P1] 데이터 개수·이미지·고지·비수익화·SEO 정적 검증
 
-## User Story — 재방문 도구
+## 배포·운영
 
-- [x] T009 [P2] `localStorage` 빌드 저장·삭제 도구 구현
-- [x] T010 [P2] 브라우저 동작 검증
-- Checkpoint: 새로고침 이후 저장 데이터 유지
-
-## 배포와 인계
-
-- [x] T011 [P1] README 실행·배포·갱신·D+14/D+30 절차 작성
-- [x] T012 [P1] GitHub Pages workflow 추가
-- [x] T013 [P1] 정적/HTTP 검증 후 커밋·origin push
-- [x] T014 [P1] 공개 배포 URL과 핵심 URL HTTP 검증
-- [x] T015 [P1] Paperclip 댓글에 명령·출력·위험·남은 차단 요인 기록 후 완료 처리
-  - Remaining: Riot IP·Data Dragon 에셋 공개는 보드/CEO 정책 게이트 해제 전까지 차단
+- [ ] T011 [P1] main 통합·push
+- [ ] T012 [P1] GitHub Pages Action 성공 확인
+- [ ] T013 [P1] 공개 URL·데이터·이미지·고지 실제 검증
+- [x] T014 [P1] Developer Portal 제품 등록·감사 후속 AIW-184 생성

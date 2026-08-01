@@ -32,8 +32,10 @@ python3 assets/fetch_data_dragon.py \
 
 - `availability: available`: 공식 URL 응답과 로컬 파일 SHA-256을 확인했다.
 - `availability: unavailable`: 공식 데이터가 파일을 제공하지 않거나 공식 URL 접근에 실패했다. 임의 복제·현대 자산 대체 금지.
-- `policy_status: 확인 중`: 출처와 무결성만 확인했으며 공개 배포 허용 결론은 내리지 않았다.
-- `public_distribution: false`: 정책 승인 전에는 공개 배포 산출물에 포함하지 않는다.
+- `policy_status: 공개 가능 (조건부)`: 2026-08-02 개인 비상업 팬 프로젝트 사실관계와 Riot 공식 정책을 재검토했다.
+- `public_distribution: true`: 두 필수 고지, 공식 출처·버전·확인일, Riot 로고 미사용, 비수익화 조건으로 공개한다.
+- `mastery_tree_chrome`: 공식 아카이브 미제공으로 계속 제외한다.
+- Developer Portal 제품 등록·감사는 AIW-184에서 공개와 병행한다.
 
 정책 확인 출발점:
 

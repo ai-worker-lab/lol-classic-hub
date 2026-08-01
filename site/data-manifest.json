@@ -1,17 +1,31 @@
 {
   "generatedAt": "2026-08-02",
-  "sourceVersion": "3.15.5",
+  "sourceVersion": "3.13.24",
+  "locale": "ko_KR",
   "checkedAt": "2026-08-02",
+  "publicDistribution": true,
   "counts": {
-    "champions": 0,
-    "items": 0,
-    "masteries": 0,
-    "runes": 0
+    "champions": 116,
+    "items": 205,
+    "masteries": 56,
+    "runes": 296
+  },
+  "uniqueImages": 447,
+  "dataSha256": {
+    "champions": "d073d5a023cb700118c3d63652b15d11fb8e213896897828cc024daef0cea925",
+    "items": "cecc6ed683f80f076f0888053648f9604017155a9f9cc3ad2d9b47c3f8254bbe",
+    "masteries": "2fd552d4fbf4cb25b5b4e1ba6e7bd7e7a3ba1dc1a63cbfe3fef34e57385a53ae",
+    "runes": "de3d476f130bacd46e122acbc9a5a95fa2a1af94c8fce1d422297b1de795857f"
   },
   "sources": {
-    "champions": "https://ddragon.leagueoflegends.com/cdn/3.15.5/data/ko_KR/champion.json",
-    "items": "https://ddragon.leagueoflegends.com/cdn/3.15.5/data/ko_KR/item.json",
-    "masteries": "https://ddragon.leagueoflegends.com/cdn/3.15.5/data/ko_KR/mastery.json",
-    "runes": "https://ddragon.leagueoflegends.com/cdn/3.15.5/data/ko_KR/rune.json"
-  }
+    "champions": "https://ddragon.leagueoflegends.com/cdn/3.13.24/data/ko_KR/champion.json",
+    "items": "https://ddragon.leagueoflegends.com/cdn/3.13.24/data/ko_KR/item.json",
+    "masteries": "https://ddragon.leagueoflegends.com/cdn/3.13.24/data/ko_KR/mastery.json",
+    "runes": "https://ddragon.leagueoflegends.com/cdn/3.13.24/data/ko_KR/rune.json"
+  },
+  "limitations": [
+    "시즌 3 역사 스냅샷",
+    "2026 League Classic 현행 동일성 미보증",
+    "마스터리 트리 배경·연결선 제외"
+  ]
 }
