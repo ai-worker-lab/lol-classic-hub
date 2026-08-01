@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Riot 공식 Data Dragon 역사 스냅샷으로 정적 MVP를 생성한다."""
+"""Riot IP 정책 게이트를 지키는 색인 가능 정적 셸을 생성한다."""
 
 from __future__ import annotations
 
