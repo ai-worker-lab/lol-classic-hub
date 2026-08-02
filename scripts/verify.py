@@ -19,6 +19,11 @@ VERSION = "3.13.24"
 LOCALE = "ko_KR"
 POLICY_REVIEWED_AT = "2026-08-02"
 REQUIRED_PATHS = ["/", "/runes/", "/masteries/", "/season3-items/", "/champions/", "/builder/"]
+EXPECTED_ITEM_DETAIL_PAGES = 205
+EXPECTED_FROM_ITEMS = 158
+EXPECTED_INTO_ITEMS = 65
+EXPECTED_FROM_REFS = 279
+EXPECTED_INTO_REFS = 267
 DATA_PATHS = {
     "/runes/": ("runes", 296),
     "/masteries/": ("masteries", 56),
@@ -55,15 +60,19 @@ class PageParser(HTMLParser):
         self.current_script_type = ""
         self.current_script = ""
         self.text: list[str] = []
+        self.item_node_labels: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         values = dict(attrs)
+        if "item-node" in (values.get("class") or "").split():
+            self.item_node_labels.append(values.get("aria-label") or "")
         if tag == "title": self.in_title = True
         elif tag == "meta":
             key = values.get("name") or values.get("property")
             if key and values.get("content"): self.meta[key] = values["content"] or ""
         elif tag == "link" and values.get("rel") == "canonical": self.canonical = values.get("href") or ""
-        elif tag == "a" and values.get("href"): self.links.append(values["href"] or "")
+        elif tag == "a" and values.get("href"):
+            self.links.append(values["href"] or "")
         elif tag == "img" and values.get("src"):
             self.images.append(values["src"] or "")
             self.image_alts.append(values.get("alt") or "")
@@ -97,9 +106,83 @@ def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def relation_has_cycle(items: dict[str, dict[str, object]], relation_key: str) -> bool:
+    def visit(item_id: str, path: frozenset[str]) -> bool:
+        if item_id in path:
+            return True
+        refs = items.get(item_id, {}).get(relation_key)
+        return isinstance(refs, list) and any(visit(str(ref), path | {item_id}) for ref in refs if str(ref) in items)
+    return any(visit(item_id, frozenset()) for item_id in items)
+
+
+def expected_purchase(entry: dict[str, object]) -> str:
+    gold = entry.get("gold")
+    value = entry.get("purchasable")
+    if value is None and isinstance(gold, dict):
+        value = gold.get("purchasable")
+    return "가능" if value is True else "불가" if value is False else "데이터 없음"
+
+
+def expected_badges(entry: dict[str, object]) -> list[str]:
+    badges = ["구매 불가"] if expected_purchase(entry) == "불가" else []
+    maps = entry.get("maps")
+    if isinstance(maps, dict):
+        excluded = [str(map_id) for map_id, available in maps.items() if available is False]
+        included = [str(map_id) for map_id, available in maps.items() if available is True]
+        badges.extend(f"맵 {map_id} 제외" for map_id in excluded)
+        if included and not excluded:
+            badges.append("맵 " + ", ".join(included) + " 전용")
+    return badges
+
+
+def expected_node_label(entry: dict[str, object], item_id: str, quantity: int = 1) -> str:
+    gold_value = entry.get("gold")
+    gold: dict[str, object] = gold_value if isinstance(gold_value, dict) else {}
+    quantity_label = f" {quantity}개 필요" if quantity > 1 else ""
+    badges = expected_badges(entry)
+    badge_label = " 배지: " + ", ".join(badges) if badges else ""
+    return (
+        f"{entry.get('name', '이름 없음')}{quantity_label} 아이템 ID {item_id} "
+        f"총 가격 {gold.get('total', '데이터 없음')} · 조합 비용 {gold.get('base', '데이터 없음')} "
+        f"구매 {expected_purchase(entry)}{badge_label}"
+    )
+
+
+def expected_relation_labels(
+    refs: list[object],
+    items: dict[str, dict[str, object]],
+    relation_key: str,
+    *,
+    depth: int = 0,
+    max_depth: int = 8,
+    visited: frozenset[str] = frozenset(),
+) -> list[str]:
+    if depth >= max_depth:
+        return []
+    labels: list[str] = []
+    for item_id, quantity in Counter(str(ref) for ref in refs).items():
+        if item_id in visited:
+            continue
+        entry = items.get(item_id)
+        if entry is None:
+            continue
+        labels.append(expected_node_label(entry, item_id, quantity))
+        child_value = entry.get(relation_key)
+        if item_id not in visited and isinstance(child_value, list) and child_value:
+            labels.extend(expected_relation_labels(
+                child_value,
+                items,
+                relation_key,
+                depth=depth + 1,
+                max_depth=max_depth,
+                visited=visited | {item_id},
+            ))
+    return labels
+
+
 def main() -> int:
     errors: list[str] = []
-    required_files = [SITE/"robots.txt",SITE/"sitemap.xml",SITE/"404.html",SITE/"assets/site.css",SITE/"assets/builder.js",SITE/"data-manifest.json"]
+    required_files = [SITE/"robots.txt",SITE/"sitemap.xml",SITE/"404.html",SITE/"assets/site.css",SITE/"assets/builder.js",SITE/"assets/item-search.js",SITE/"data-manifest.json"]
     for required in required_files:
         if not required.is_file(): errors.append(f"필수 파일 없음: {required.relative_to(ROOT)}")
 
@@ -315,6 +398,122 @@ def main() -> int:
         if manifest_sha != official_sha:
             errors.append(f"배포 데이터 매니페스트 SHA-256 불일치: {key} (실제 {manifest_sha}, 기대 {official_sha})")
 
+    item_payload = json.loads((data_root/"item.json").read_text(encoding="utf-8"))
+    raw_items = item_payload["data"]
+    items: dict[str, dict[str, object]] = {str(item_id): entry for item_id, entry in raw_items.items() if isinstance(entry, dict)}
+    def refs_for(entry: dict[str, object], key: str) -> list[object]:
+        value = entry.get(key)
+        return value if isinstance(value, list) else []
+    from_items = sum(bool(refs_for(entry, "from")) for entry in items.values())
+    into_items = sum(bool(refs_for(entry, "into")) for entry in items.values())
+    from_refs = sum(len(refs_for(entry, "from")) for entry in items.values())
+    into_refs = sum(len(refs_for(entry, "into")) for entry in items.values())
+    if (from_items, into_items, from_refs, into_refs) != (EXPECTED_FROM_ITEMS, EXPECTED_INTO_ITEMS, EXPECTED_FROM_REFS, EXPECTED_INTO_REFS):
+        errors.append(f"아이템 관계 수치 오류: from 보유/into 보유/from 참조/into 참조 = {from_items}/{into_items}/{from_refs}/{into_refs}")
+    missing_refs = sorted({str(ref) for entry in items.values() for key in ("from", "into") for ref in refs_for(entry, key) if str(ref) not in items})
+    if missing_refs:
+        errors.append(f"누락 아이템 참조 {len(missing_refs)}개: {', '.join(missing_refs[:5])}")
+    for relation_key in ("from", "into"):
+        if relation_has_cycle(items, relation_key):
+            errors.append(f"아이템 {relation_key} 순환 관계 감지")
+
+    detail_dirs = [path for path in (SITE/"season3-items").iterdir() if path.is_dir()]
+    if len(detail_dirs) != EXPECTED_ITEM_DETAIL_PAGES:
+        errors.append(f"아이템 상세 페이지 수 오류: {len(detail_dirs)} != {EXPECTED_ITEM_DETAIL_PAGES}")
+    for item_id, entry in items.items():
+        path = f"/season3-items/{item_id}/"
+        page = file_for(path)
+        if not page.is_file():
+            errors.append(f"아이템 상세 페이지 없음: {item_id}")
+            continue
+        source = page.read_text(encoding="utf-8")
+        parser = PageParser(); parser.feed(source)
+        expected = f"https://ai-worker-lab.github.io{BASE}{path}"
+        expected_canonicals.add(expected)
+        if parser.canonical != expected:
+            errors.append(f"아이템 canonical 오류: {item_id} -> {parser.canonical}")
+        if parser.meta.get("robots") != "index,follow,max-image-preview:large":
+            errors.append(f"아이템 robots meta 오류: {item_id}")
+        item_name = str(entry.get("name", "이름 없음"))
+        page_name = f"{item_name} 조합·업그레이드 트리"
+        full_page_name = f"{page_name} | 클래식 노트"
+        page_description = f"{item_name}의 시즌 3 하위 조합 재료, 가격, 상위 업그레이드 트리."
+        if parser.title != full_page_name or parser.meta.get("description") != page_description:
+            errors.append(f"아이템 title/description 내용 오류: {item_id}")
+        if parser.meta.get("og:title") != full_page_name or parser.meta.get("og:description") != page_description:
+            errors.append(f"아이템 Open Graph 내용 오류: {item_id}")
+        if parser.meta.get("og:url") != expected:
+            errors.append(f"아이템 og:url 오류: {item_id}")
+        json_ld_rows = [body for script_type, body in parser.scripts if script_type == "application/ld+json"]
+        try:
+            structured = json.loads(json_ld_rows[0]) if json_ld_rows else {}
+        except json.JSONDecodeError as exc:
+            errors.append(f"아이템 JSON-LD 오류: {item_id}: {exc}")
+            structured = {}
+        if structured.get("@type") != "ItemPage" or structured.get("name") != full_page_name or structured.get("url") != expected or structured.get("inLanguage") != "ko-KR":
+            errors.append(f"아이템 JSON-LD 계약 오류: {item_id}")
+        text = " ".join(parser.text)
+        for marker in ["하위 조합 재료", "현재 아이템", "상위 업그레이드", f"아이템 ID {item_id}", "총 가격", "조합 비용", "구매"] + LEGAL_MARKERS:
+            if marker not in text:
+                errors.append(f"아이템 상세 표식 '{marker}' 없음: {item_id}")
+        if not entry.get("from") and "기본 아이템" not in text:
+            errors.append(f"기본 아이템 상태 없음: {item_id}")
+        if not entry.get("into") and "상위 업그레이드 없음" not in text:
+            errors.append(f"최종 아이템 상태 없음: {item_id}")
+        gold_value = entry.get("gold")
+        gold: dict[str, object] = gold_value if isinstance(gold_value, dict) else {}
+        current_markers = [
+            str(entry.get("name", "이름 없음")),
+            f"총 가격 {gold.get('total', '데이터 없음')}",
+            f"조합 비용 {gold.get('base', '데이터 없음')}",
+            f"구매 {expected_purchase(entry)}",
+            *expected_badges(entry),
+        ]
+        for marker in current_markers:
+            if marker not in text: errors.append(f"아이템 현재 노드 데이터 '{marker}' 불일치: {item_id}")
+        for relation_key in ("from", "into"):
+            counts = Counter(str(ref) for ref in refs_for(entry, relation_key))
+            for ref_id, quantity in counts.items():
+                target = items[ref_id]
+                target_gold_value = target.get("gold")
+                target_gold: dict[str, object] = target_gold_value if isinstance(target_gold_value, dict) else {}
+                relation_markers = [
+                    str(target.get("name", "이름 없음")),
+                    f"아이템 ID {ref_id}",
+                    f"총 가격 {target_gold.get('total', '데이터 없음')}",
+                    f"조합 비용 {target_gold.get('base', '데이터 없음')}",
+                    f"구매 {expected_purchase(target)}",
+                    *expected_badges(target),
+                ]
+                if quantity > 1:
+                    relation_markers.append(f"×{quantity}")
+                for marker in relation_markers:
+                    if marker not in text: errors.append(f"아이템 {relation_key} 노드 데이터 '{marker}' 불일치: {item_id}->{ref_id}")
+        expected_labels = [expected_node_label(entry, item_id)]
+        expected_labels.extend(expected_relation_labels(refs_for(entry, "from"), items, "from", visited=frozenset({item_id})))
+        expected_labels.extend(expected_relation_labels(refs_for(entry, "into"), items, "into", visited=frozenset({item_id})))
+        if Counter(parser.item_node_labels) != Counter(expected_labels):
+            errors.append(f"아이템 재귀 노드 내용·수량 불일치: {item_id}")
+        for image in parser.images:
+            expected_prefix = f"{BASE}/assets/riot-data-dragon/{VERSION}/img/item/"
+            if not image.startswith(expected_prefix) or not public_file(urlparse(image).path).is_file():
+                errors.append(f"아이템 상세 이미지 오류: {item_id} -> {image}")
+        for link in parser.links:
+            parsed = urlparse(link)
+            if parsed.scheme or parsed.netloc or not parsed.path.startswith(BASE):
+                continue
+            relative = parsed.path.removeprefix(BASE) or "/"
+            target = file_for(relative) if relative.endswith("/") else SITE/relative.lstrip("/")
+            if not target.exists():
+                errors.append(f"아이템 상세 깨진 내부 링크: {item_id} -> {link}")
+
+    duplicate_page = (SITE/"season3-items/3028/index.html").read_text(encoding="utf-8")
+    if "×2" not in duplicate_page or duplicate_page.count("아이템 ID 1004") < 1:
+        errors.append("동일 재료 수량 집계 회귀: 3028에서 1004 ×2 없음")
+    item_list_source = (SITE/"season3-items/index.html").read_text(encoding="utf-8")
+    if item_list_source.count('data-item-search=') != EXPECTED_ITEM_DETAIL_PAGES or "item-search.js" not in item_list_source:
+        errors.append("아이템 목록 검색·상세 진입 링크 오류")
+
     sitemap = (SITE/"sitemap.xml").read_text(encoding="utf-8") if (SITE/"sitemap.xml").exists() else ""
     for url in expected_canonicals:
         if f"<loc>{url}</loc>" not in sitemap: errors.append(f"사이트맵 URL 없음: {url}")
@@ -323,6 +522,12 @@ def main() -> int:
     builder = (SITE/"assets/builder.js").read_text(encoding="utf-8") if (SITE/"assets/builder.js").exists() else ""
     for token in ["localStorage.getItem","localStorage.setItem","remove"]:
         if token not in builder: errors.append(f"빌더 동작 토큰 없음: {token}")
+    item_search = (SITE/"assets/item-search.js").read_text(encoding="utf-8") if (SITE/"assets/item-search.js").exists() else ""
+    for token in ["itemSearch", "addEventListener('input'", "hidden"]:
+        if token not in item_search: errors.append(f"아이템 검색 동작 토큰 없음: {token}")
+    site_css = (SITE/"assets/site.css").read_text(encoding="utf-8") if (SITE/"assets/site.css").exists() else ""
+    for token in [":focus-visible", "grid-template-columns:repeat(3", "@media(max-width:820px)", ".tree-stage-current{order:2}"]:
+        if token not in site_css: errors.append(f"아이템 반응형·키보드 스타일 토큰 없음: {token}")
 
     deployed_text = "\n".join(path.read_text(encoding="utf-8", errors="ignore") for path in SITE.rglob("*") if path.is_file() and path.suffix in {".html",".js",".json",".css"})
     if re.search(r"(?:api[_-]?key|secret|password)\s*[:=]", deployed_text, re.I): errors.append("배포 산출물에서 비밀정보 형태 문자열 감지")
@@ -332,11 +537,12 @@ def main() -> int:
         print("검증 실패")
         print("\n".join(f"- {error}" for error in errors))
         return 1
-    print(f"검증 성공: 페이지 {len(REQUIRED_PATHS)}개, 오류 0건")
+    print(f"검증 성공: 기본 페이지 {len(REQUIRED_PATHS)}개 + 아이템 상세 {EXPECTED_ITEM_DETAIL_PAGES}개, 오류 0건")
     print("데이터 항목:", ", ".join(f"{key}={value}" for key,value in manifest["counts"].items()))
     print(f"이미지: 참조 {len(asset_refs)}개, 고유 파일 {len(manifest_images)}개, vendor/site 누락·추가 0")
     print("정책: 필수 고지·비수익화·공식 이미지 경로·Riot 로고 미사용 확인")
     print("SEO: canonical/description/Open Graph/JSON-LD/robots/sitemap 확인")
+    print(f"아이템 관계: from 보유/into 보유 {from_items}/{into_items}, 참조 {from_refs}/{into_refs}, 누락·순환·깨진 링크 0")
     return 0
 
 

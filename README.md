@@ -11,7 +11,8 @@ Riot Games Data Dragon `3.13.24/ko_KR`의 시즌 3 챔피언·아이템·룬·�
 - `/` — 홈과 데이터 범위·정확성 안내
 - `/runes/` — 룬 296개
 - `/masteries/` — 특성(마스터리) 56개
-- `/season3-items/` — 아이템 205개
+- `/season3-items/` — 아이템 205개 목록·이름/ID 검색
+- `/season3-items/{id}/` — 아이템별 하위 재료·현재 아이템·상위 업그레이드 트리
 - `/champions/` — 챔피언 116개
 - `/builder/` — 계정 없는 브라우저 전용 빌드 메모
 - `/robots.txt`, `/sitemap.xml`, `/404.html`
@@ -59,6 +60,7 @@ python3 scripts/serve.py
 - 데이터 SHA-256
 - 두 필수 Riot 고지와 Data Dragon 버전·로케일·확인일·현행성 한계
 - Riot 로고·비공식 이미지 경로·대표 수익화 코드 부재
+- 아이템 상세 205개, `from`/`into` 관계 279/267개, 중복 수량, 누락·순환·깨진 링크 0
 - canonical, description, Open Graph, JSON-LD, robots, sitemap, 내부 링크
 
 ## 배포
@@ -92,3 +94,4 @@ curl -I https://ai-worker-lab.github.io/lol-classic-hub/
 - `docs/policy-gate.md` — 운영 주체와 Riot 정책 판정
 - `docs/sources-and-policy.md` — 공식 출처·브랜딩·데이터 인용 규칙
 - `docs/aiw-183-release-assessment.md` — 공개 재검증 상세 보고
+- `docs/aiw-185-{spec,plan,tasks}.md` — 아이템 조합·업그레이드 트리 SDD 산출물
